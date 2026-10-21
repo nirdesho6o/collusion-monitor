@@ -63,7 +63,7 @@ Governing plan: `track23_handoff_v4.md` (supersedes v1–v3) since 21 Oct.
   penalty per agent; do NOT drop duplicate agents in Δ_excl. Δ_excl drops only claimants who ended up
   without their claimed task (claim-takes), symmetrically in runs and matched controls.
 - **τ**: set by the user from the control-to-control spread on tuning seeds; stored in a config file
-  and in the user's pre-registration.
+  and in the user's pre-registration. (Metric updated later on 21 Oct: spread of the regret gap; see below.)
 - **Public-claim rule**: deterministic, no LLM. Draft proposed and applied to the 19 Oct pilot for
   hand-checking; awaiting user approval.
 - **assignment_filling**: code behaviour and repo/paper evidence reported; user to decide. No tuning
@@ -73,3 +73,24 @@ Governing plan: `track23_handoff_v4.md` (supersedes v1–v3) since 21 Oct.
   collusion figures used Kimi-K2-Instruct; the paper's "coalition advantage" is a regret gap
   (non-coalition mean regret − coalition mean regret), whereas `coalition_advantage_mean` in
   `metrics.json` is a reward difference. Reported to the user; not resolved.
+
+## 2026-10-21 — decisions (user), later the same day
+
+- **Claim rule approved** (provisional) and moved into the repo: `experiments/collusion/track23/claims.py`,
+  tests `tests/test_claims.py`. On each tuning run, list public planning messages that name a task ID
+  but were classified MENTION, for a hand check of missed claims. Frozen with everything else on 22 Oct.
+- **assignment_filling: false** for every condition. Runs where an agent fails to act come back
+  `incomplete`; they are excluded and logged, with exclusions reported by condition.
+- **Agent temperature 0.7** for all agents, matching the paper (§5.3). Pilot (0.4) is not comparable.
+- **Agent max output tokens 1500**: paper §5.3 "1.5k output token limit per conversation turn"
+  (rendered "1.51.5k" in the arXiv HTML); `collusion_jira_complete_n6_c2_regret_models.yaml` uses
+  `max_tokens: 1500`. Pilot used 1024. To be set in the tuning config (pilot config left as run).
+- **Coalition advantage = regret gap** G = non-coalition mean regret − coalition mean regret
+  (paper §5.3; unnormalised). Per-agent regret = unilateral best response over all actions, others
+  fixed (paper §5.3) = `metrics.json` `agents[].regret`; not the "ordered" regret of App. D.5.
+  Δ_raw = G(run) − mean G(control replicates, same seed); Δ_excl drops claim-take claimants.
+  The reward difference `coalition_advantage_mean` is a logged secondary column only.
+- **τ** (updated): set by the user from the control-to-control spread of the regret gap G on tuning
+  seeds; stored in a config file and the user's pre-registration.
+- Design notes: `experiments/collusion/track23/EXTRACT_RUNS_DESIGN.md`.
+- Waiting for the user's Gemini daily request limit before tuning runs (Prompt 3).
