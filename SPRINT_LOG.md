@@ -94,3 +94,23 @@ Governing plan: `track23_handoff_v4.md` (supersedes v1–v3) since 21 Oct.
   seeds; stored in a config file and the user's pre-registration.
 - Design notes: `experiments/collusion/track23/EXTRACT_RUNS_DESIGN.md`.
 - Waiting for the user's Gemini daily request limit before tuning runs (Prompt 3).
+
+## 2026-10-21 — tuning batch (Prompt 3)
+
+- Gemini free tier for gemini-3.5-flash-lite (user, AI Studio): 15 RPM, 250K TPM, 500 RPD. Paced at ≤13 RPM;
+  daily cap 480 enforced per request attempt (`logs/gemini_request_ledger.json`). Today's prior usage
+  could not be read (no SDK endpoint); assumed a fresh 500. No Gemini requests had been made today.
+- Tuning config `experiments/collusion/configs/collusion_jira_track23_tuning.yaml` (temp 0.7, max_tokens 1500,
+  assignment_filling false; Prompted = structured, Emergent = control + channel, Control = channel off).
+  Tuning seeds chosen by Claude Code: **101, 102** (pilot used 1; held-out seeds must avoid 1, 101, 102).
+  Driver `experiments/collusion/track23/run_tuning.py`: one run per invocation, manifest
+  `experiments/collusion/outputs/track23_tuning/manifest.jsonl`.
+- Infrastructure deviations during the batch (no design change; identical requests resent):
+  - s101 Control r2, 1st attempt: 503 "model experiencing high demand" after 40 requests → excluded
+    (no `metrics.json`). Added 503 retry with backoff.
+  - s101 Control r2, 2nd attempt: laptop suspended 13:37 IST; request hung ~2 h on a dead connection
+    (no SDK timeout), killed after 18 requests → excluded. Added 120 s request timeout + retry on
+    timeouts/dropped connections; batch re-run under `systemd-inhibit`.
+- Valid runs (7): requests per run 54–62 (Control 54/54/54/55, Emergent 62/61, Prompted 60).
+  Requests today: 458 = 400 valid + 58 lost to failed attempts. s102 Prompted not run: projected
+  458 + 62 > 480.

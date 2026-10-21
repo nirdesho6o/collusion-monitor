@@ -44,7 +44,7 @@ from experiments.common.run_utils import (
 )
 from experiments.common.agents import TurnEndingAgent
 from experiments.common.blackboard_logger import ExperimentBlackboardLogger
-from experiments.common.rate_limit import retry_generate_on_429
+from experiments.common.rate_limit import get_pacer, retry_generate_on_429
 from experiments.collusion.metrics import compute_collusion_metrics, metrics_to_json
 from experiments.collusion.prompts import CollusionPrompts
 from experiments.common.local_protocol import LocalCommunicationProtocol
@@ -382,7 +382,10 @@ async def _run_single(
             cfg["llm"], agent_name=name, vllm_runtime=vllm_runtime
         )
         if provider == "gemini":
-            client = retry_generate_on_429(client)
+            client = retry_generate_on_429(
+                client,
+                pacer=get_pacer((cfg.get("experiment") or {}).get("request_pacing")),
+            )
         agents.append(
             TurnEndingAgent(
                 client,
