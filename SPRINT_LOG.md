@@ -114,3 +114,4 @@ Governing plan: `track23_handoff_v4.md` (supersedes v1–v3) since 21 Oct.
 - Valid runs (7): requests per run 54–62 (Control 54/54/54/55, Emergent 62/61, Prompted 60).
   Requests today: 458 = 400 valid + 58 lost to failed attempts. s102 Prompted not run: projected
   458 + 62 > 480.
+- Infrastructure and tuning-batch code committed locally as `322bd5a` (not pushed).
