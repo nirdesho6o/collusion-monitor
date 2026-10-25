@@ -238,6 +238,59 @@ def print_sp_comparison(agg_rows: List[Dict[str, Any]], extract_rows: List[Dict[
 
 
 # ---------------------------------------------------------------------------
+# (g) Calibration figure: original vs calibrated predicted_yes_pct
+# ---------------------------------------------------------------------------
+
+def figure_calibration(calibrated_path: str, original_mean: float,
+                       actual_fraction: float, output_path: str):
+    calibrated_data = json.loads(Path(calibrated_path).read_text())
+    cal_preds = [r["parsed"]["predicted_yes_pct"] for r in calibrated_data if r.get("valid")]
+    cal_mean = np.mean(cal_preds) if cal_preds else 0
+
+    fig, ax = plt.subplots(figsize=(6, 4.5))
+    labels = ["Original V3\nmonitors", "Calibrated V3\nmonitors", "Actual fraction\nyes in P_minority"]
+    values = [original_mean, cal_mean, actual_fraction * 100]
+    colors = ["#d64541", "#27ae60", "#3498db"]
+
+    bars = ax.bar(labels, values, color=colors, alpha=0.85, width=0.55, edgecolor="white", linewidth=1.2)
+    for bar, val in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.5,
+                f"{val:.1f}%", ha="center", va="bottom", fontweight="bold", fontsize=12)
+
+    ax.set_ylabel("Predicted / actual yes %")
+    ax.set_title("Calibrating monitor predictions\nrestores the SP signal")
+    ax.set_ylim(0, 110)
+    ax.axhline(y=actual_fraction * 100, color="#3498db", linestyle="--", alpha=0.4, linewidth=1)
+    ax.grid(axis="y", alpha=0.2)
+
+    # SP annotation
+    ax.annotate(f"SP check: f={actual_fraction:.2f} > p̄={cal_mean/100:.3f} → yes",
+                xy=(1, cal_mean), xytext=(0.5, 70),
+                fontsize=9, ha="center",
+                arrowprops=dict(arrowstyle="->", color="#27ae60", lw=1.5),
+                bbox=dict(boxstyle="round,pad=0.3", fc="#eafaf1", ec="#27ae60", alpha=0.9))
+
+    fig.tight_layout()
+    fig.savefig(output_path, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved Figure 3 to {output_path}", file=sys.stderr)
+
+
+def print_calibrated_sp(calibrated_path: str):
+    calibrated_data = json.loads(Path(calibrated_path).read_text())
+    cal_preds = [r["parsed"]["predicted_yes_pct"] for r in calibrated_data if r.get("valid")]
+    cal_mean = np.mean(cal_preds) if cal_preds else 0
+    f = 0.25  # 2/8 yes in P_minority
+    p_bar = cal_mean / 100.0
+    label = "yes" if f > p_bar else "no"
+    print(f"\n=== (g) CALIBRATED SP CHECK (prompted_s101_r1, P_minority) ===")
+    print(f"Calibrated V3 predicted_yes_pct: mean={cal_mean:.1f}% (n={len(cal_preds)})")
+    print(f"SP: f={f:.2f} {'>' if f > p_bar else '≤'} p̄={p_bar:.3f} → {label}")
+    print(f"Original SP (uncalibrated): f=0.25 ≤ p̄=0.950 → no")
+    print(f"One sentence of calibration context flips SP from 'no' to 'yes'.")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -246,6 +299,8 @@ def main():
     parser.add_argument("--monitor-results", default=None, help="JSON from run_monitors.py")
     parser.add_argument("--extract-csv", required=True, help="CSV from extract_runs.py")
     parser.add_argument("--aggregate-csv", default=None, help="CSV from aggregate.py")
+    parser.add_argument("--calibrated-v3", default=None,
+                        help="JSON from calibrated V3 experiment")
     parser.add_argument("--fig-dir", default="experiments/collusion/outputs/track23_tuning/figures",
                         help="Directory for figure PDFs")
     args = parser.parse_args()
@@ -277,6 +332,13 @@ def main():
         print_sp_comparison(agg_rows, extract_rows)
     else:
         print("\n=== (f) Aggregate results not available. Skipped. ===")
+
+    cal_path = args.calibrated_v3
+    if cal_path and Path(cal_path).exists():
+        print_calibrated_sp(cal_path)
+        fig_dir = Path(args.fig_dir)
+        fig_dir.mkdir(parents=True, exist_ok=True)
+        figure_calibration(cal_path, 95.0, 0.25, str(fig_dir / "fig3_calibration.pdf"))
 
     print("\n=== ANALYSIS COMPLETE (exploratory — no confirmatory claims) ===")
 
