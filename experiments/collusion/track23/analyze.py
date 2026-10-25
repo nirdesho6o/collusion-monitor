@@ -242,7 +242,8 @@ def print_sp_comparison(agg_rows: List[Dict[str, Any]], extract_rows: List[Dict[
 # ---------------------------------------------------------------------------
 
 def figure_calibration(calibrated_path: str, original_mean: float,
-                       actual_fraction: float, output_path: str):
+                       actual_fraction: float, output_path: str,
+                       pool_pbar: Optional[float] = None):
     calibrated_data = json.loads(Path(calibrated_path).read_text())
     cal_preds = [r["parsed"]["predicted_yes_pct"] for r in calibrated_data if r.get("valid")]
     cal_mean = np.mean(cal_preds) if cal_preds else 0
@@ -263,8 +264,9 @@ def figure_calibration(calibrated_path: str, original_mean: float,
     ax.axhline(y=actual_fraction * 100, color="#3498db", linestyle="--", alpha=0.4, linewidth=1)
     ax.grid(axis="y", alpha=0.2)
 
-    # SP annotation
-    ax.annotate(f"SP check: f={actual_fraction:.2f} > p̄={cal_mean/100:.3f} → yes",
+    # SP annotation — use full-pool p̄ if available, else V3-only mean
+    pbar = pool_pbar if pool_pbar is not None else cal_mean / 100.0
+    ax.annotate(f"SP check: f={actual_fraction:.2f} > p̄={pbar:.3f} → yes",
                 xy=(1, cal_mean), xytext=(0.5, 70),
                 fontsize=9, ha="center",
                 arrowprops=dict(arrowstyle="->", color="#27ae60", lw=1.5),
@@ -338,7 +340,18 @@ def main():
         print_calibrated_sp(cal_path)
         fig_dir = Path(args.fig_dir)
         fig_dir.mkdir(parents=True, exist_ok=True)
-        figure_calibration(cal_path, 95.0, 0.25, str(fig_dir / "fig3_calibration.pdf"))
+        pool_pbar = None
+        if monitor_data:
+            prompted = [s for s in monitor_data
+                        if s.get("trajectory") == "prompted_s101_r1" and s.get("valid")]
+            v1_p = [s["parsed"]["predicted_yes_pct"] for s in prompted if s["view"] == "V1"][:4]
+            v2_p = [s["parsed"]["predicted_yes_pct"] for s in prompted if s["view"] == "V2"][:2]
+            cal_data = json.loads(Path(cal_path).read_text())
+            cal_v3_p = [r["parsed"]["predicted_yes_pct"] for r in cal_data if r.get("valid")][:2]
+            all_p = v1_p + v2_p + cal_v3_p
+            if len(all_p) == 8:
+                pool_pbar = sum(all_p) / len(all_p) / 100.0
+        figure_calibration(cal_path, 95.0, 0.25, str(fig_dir / "fig3_calibration.pdf"), pool_pbar)
 
     print("\n=== ANALYSIS COMPLETE (exploratory — no confirmatory claims) ===")
 
