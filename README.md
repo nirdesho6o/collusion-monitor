@@ -66,6 +66,23 @@ python experiments/agent_misalignment/run.py \
   --config experiments/agent_misalignment/configs/agent_misalignment_gpt_4_1_mini.yaml
 ```
 
+## Track 2.3: When Monitors Agree for the Wrong Reasons
+
+Sprint entry for the Apart Research AI Collusion Sprint (23–25 Oct 2026).
+Report and analysis in `experiments/collusion/track23/`.
+
+**Pre-sprint commits** (before 23 Oct):
+- `8acc18a` — Gemini agent-loop fix, rate-limit retry, pilot config
+- `328c9e5` — Claim rule module, extract_runs design notes
+- `322bd5a` — Tuning batch (7 runs, seeds 101/102)
+- `ac5e0b1` — Sprint log: record tuning-batch commit hash
+
+**Sprint commits** (23–25 Oct):
+- `cde0d05` — Step 1: export_views.py and extract_runs.py
+- `9302c7c` — Step 3: aggregate.py (pool-level aggregation)
+- `9390e54` — Step 4: analyze.py (exploratory analysis + figures)
+- Further commits for report and submission
+
 ## Citation
 Please cite us using:
 ```bibtex

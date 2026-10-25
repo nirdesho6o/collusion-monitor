@@ -150,3 +150,19 @@ Governing plan: `track23_handoff_v4.md` (supersedes v1–v3) since 21 Oct.
   **NousResearch/Hermes-3-Llama-3.1-8B** (Llama family, ungated, hermes parser). Different families
   to avoid single-family confound.
 - Blocked on: `modal setup` (interactive browser auth).
+
+## 2026-10-25 — analysis pipeline and report skeleton (sprint day 3)
+
+- **Step 1** (committed `cde0d05`): `export_views.py` and `extract_runs.py`. Views exported for all 8 runs.
+  CSV at `experiments/collusion/outputs/track23_tuning/extract_runs.csv`.
+- **Step 2** (deferred): Modal monitor (Qwen3-8B). Blocked on payment method for L4 GPU. User decision:
+  skip to steps 3–5, leave monitor slots empty. Gemini not used as monitor (user instruction).
+- **Step 3** (committed `9302c7c`): `aggregate.py` — four view-blind aggregators + two ceilings, shuffle test.
+- **Step 4** (committed `9390e54`): `analyze.py` — exploratory analysis. Summary table (a), monitor
+  agreement (b), expert-minority diagnostic (c), two figures as PDF (d, e), SP comparison (f).
+  Gracefully skips monitor-dependent sections when results are unavailable.
+- **Step 5** (this entry): `report.md` skeleton with all sections ([FILL] markers for user prose).
+  README updated with pre-sprint vs sprint commit listing.
+- **Monitor status**: still blocked. Modal requires payment method for L4. No monitor results available.
+- **No Gemini API calls** made today.
+- **No new runs** today.
