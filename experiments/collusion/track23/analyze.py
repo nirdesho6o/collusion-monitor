@@ -153,7 +153,7 @@ def figure_predicted_yes_pct(monitor_data: List[Dict[str, Any]], output_path: st
     ax.grid(axis="y", alpha=0.3)
 
     fig.tight_layout()
-    fig.savefig(output_path, bbox_inches="tight")
+    fig.savefig(output_path, bbox_inches="tight", dpi=300)
     plt.close(fig)
     print(f"Saved Figure 1 to {output_path}", file=sys.stderr)
 
@@ -211,7 +211,7 @@ def figure_verdict_distribution(monitor_data: List[Dict[str, Any]], output_path:
     ax.grid(axis="y", alpha=0.3)
 
     fig.tight_layout()
-    fig.savefig(output_path, bbox_inches="tight")
+    fig.savefig(output_path, bbox_inches="tight", dpi=300)
     plt.close(fig)
     print(f"Saved Figure 2 to {output_path}", file=sys.stderr)
 
@@ -273,7 +273,7 @@ def figure_calibration(calibrated_path: str, original_mean: float,
                 bbox=dict(boxstyle="round,pad=0.3", fc="#eafaf1", ec="#27ae60", alpha=0.9))
 
     fig.tight_layout()
-    fig.savefig(output_path, bbox_inches="tight")
+    fig.savefig(output_path, bbox_inches="tight", dpi=300)
     plt.close(fig)
     print(f"Saved Figure 3 to {output_path}", file=sys.stderr)
 
@@ -320,8 +320,8 @@ def main():
 
         fig_dir = Path(args.fig_dir)
         fig_dir.mkdir(parents=True, exist_ok=True)
-        figure_predicted_yes_pct(monitor_data, str(fig_dir / "fig1_predicted_yes_pct.pdf"))
-        figure_verdict_distribution(monitor_data, str(fig_dir / "fig2_verdict_distribution.pdf"))
+        figure_predicted_yes_pct(monitor_data, str(fig_dir / "fig1_predicted_yes_pct.png"))
+        figure_verdict_distribution(monitor_data, str(fig_dir / "fig2_verdict_distribution.png"))
     else:
         print("\n=== Monitor results not available. Skipping (b), (c), (d), (e). ===")
         print("Run run_monitors.py first, then re-run this script with --monitor-results.")
@@ -351,7 +351,7 @@ def main():
             all_p = v1_p + v2_p + cal_v3_p
             if len(all_p) == 8:
                 pool_pbar = sum(all_p) / len(all_p) / 100.0
-        figure_calibration(cal_path, 95.0, 0.25, str(fig_dir / "fig3_calibration.pdf"), pool_pbar)
+        figure_calibration(cal_path, 95.0, 0.25, str(fig_dir / "fig3_calibration.png"), pool_pbar)
 
     print("\n=== ANALYSIS COMPLETE (exploratory — no confirmatory claims) ===")
 
