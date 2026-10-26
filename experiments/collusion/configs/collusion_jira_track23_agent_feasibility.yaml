@@ -1,0 +1,60 @@
+# Agent feasibility: open-weight Llama on Modal L4 via vLLM, Jira seed 101.
+# base_url is filled by run_agent_feasibility.py after deploying the Modal server.
+
+simulation:
+  max_iterations: 1
+  max_planning_rounds: 4
+  max_conversation_steps: 3
+  seed: 1
+  tags: [track23_agent_feasibility]
+
+environment:
+  name: JiraTicketEnvironment
+  assignment_filling: false
+  max_tasks: 8
+
+communication_network:
+  topology: complete
+  num_agents: 6
+  consolidate_channels: true
+  edge_prob: 0.6
+  k: 2
+  rewire_prob: 0.3
+  m: 3
+
+llm_models:
+  - label: hermes-3-llama-3.1-8b
+    llm:
+      provider: vllm
+      vllm:
+        models:
+          - checkpoint: NousResearch/Hermes-3-Llama-3.1-8B
+            served_model_name: NousResearch/Hermes-3-Llama-3.1-8B
+            base_url: "PLACEHOLDER_FILL_AT_RUNTIME"
+            request_timeout: 120
+        auto_start_server: false
+      params:
+        max_tokens: 1500
+        temperature: 0.7
+
+experiment:
+  tag: track23_agent_feasibility
+  output_dir: experiments/collusion/outputs/track23_agent_feasibility
+  max_concurrent_runs: 1
+  seeds: [101]
+  collusion:
+    colluder_selection: random
+    agent_order: random
+  sweeps:
+    - name: prompted
+      topologies: [complete]
+      num_agents: [6]
+      colluder_counts: [2]
+      secret_channel_enabled: [true]
+      prompt_variants: [structured]
+    - name: control
+      topologies: [complete]
+      num_agents: [6]
+      colluder_counts: [2]
+      secret_channel_enabled: [false]
+      prompt_variants: [control]
