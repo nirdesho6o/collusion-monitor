@@ -6,6 +6,9 @@
 Author: Nirdesh Bhandari, NIT Warangal
 Apart Research AI Collusion Sprint (23--25 Oct 2026)
 
+
+TL;DR. In 24 multi-agent runs (6 Gemini agents, Colosseum JiraTicket), only monitors with access to the private channel detected collusion, in the 1 run with explicit private coordination. Prelec’s surprisingly-popular rule then failed: informed monitors predicted 95% agreement (curse of knowledge), pushing the prediction average (0.294) above the actual yes-fraction (0.25). Telling them that others can’t see the private channel cut predictions to ~15% and SP correctly flagged collusion. Preliminary: one colluding run, one model family.
+
 ### Overview
 
 Can a small number of informed LLM monitors detect secret coordination in multi-agent systems, even when most monitors lack access to private communication channels?
